@@ -1,67 +1,60 @@
-const generateBtn = document.getElementById('generate');
-const passwordField = document.getElementById('password');
-const copyBtn = document.getElementById('copy');
-const strengthBar = document.getElementById('strength-bar');
+const passwordEl = document.getElementById("password");
+const lengthEl = document.getElementById("length");
+const lengthValue = document.getElementById("length-value");
+const generateBtn = document.getElementById("generate");
+const copyBtn = document.getElementById("copy");
 
-function getRandomChar(str) {
-  return str[Math.floor(Math.random() * str.length)];
-}
+const upper = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
+const lower = "abcdefghijklmnopqrstuvwxyz";
+const numbers = "0123456789";
+const symbols = "!@#$%^&*()_+";
 
-function calculateStrength(password) {
-  let strength = 0;
-  if (password.length >= 8) strength += 1;
-  if (/[A-Z]/.test(password)) strength += 1;
-  if (/[0-9]/.test(password)) strength += 1;
-  if (/[^A-Za-z0-9]/.test(password)) strength += 1;
-  return strength;
-}
+const strengthText = document.getElementById("strength-text");
+const bars = document.querySelectorAll(".bars span");
 
-function updateStrengthBar(password) {
-  const strength = calculateStrength(password);
-  const bar = strengthBar;
-  const colors = ["red", "orange", "yellowgreen", "green"];
-  bar.style.setProperty('--width', `${(strength / 4) * 100}%`);
-  bar.style.background = colors[strength - 1] || "transparent";
-  bar.style.width = `${(strength / 4) * 100}%`;
-}
+lengthEl.addEventListener("input", () => {
+  lengthValue.textContent = lengthEl.value;
+});
 
 function generatePassword() {
-  const length = parseInt(document.getElementById('length').value);
-  const useUpper = document.getElementById('uppercase').checked;
-  const useLower = document.getElementById('lowercase').checked;
-  const useNumbers = document.getElementById('numbers').checked;
-  const useSymbols = document.getElementById('symbols').checked;
-
-  const upperChars = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
-  const lowerChars = "abcdefghijklmnopqrstuvwxyz";
-  const numberChars = "0123456789";
-  const symbolChars = "!@#$%^&*()_+~`|}{[]:;?><,./-=";
-
-  let charPool = "";
-  if (useUpper) charPool += upperChars;
-  if (useLower) charPool += lowerChars;
-  if (useNumbers) charPool += numberChars;
-  if (useSymbols) charPool += symbolChars;
-
-  if (charPool === "") return "";
+  let chars = "";
+  if (document.getElementById("upper").checked) chars += upper;
+  if (document.getElementById("lower").checked) chars += lower;
+  if (document.getElementById("numbers").checked) chars += numbers;
+  if (document.getElementById("symbols").checked) chars += symbols;
 
   let password = "";
-  for (let i = 0; i < length; i++) {
-    password += getRandomChar(charPool);
+  for (let i = 0; i < lengthEl.value; i++) {
+    password += chars[Math.floor(Math.random() * chars.length)];
   }
-
   return password;
 }
 
-generateBtn.addEventListener('click', () => {
+function updateStrength(password) {
+  let strength = 0;
+  if (password.length >= 8) strength++;
+  if (/[A-Z]/.test(password)) strength++;
+  if (/[0-9]/.test(password)) strength++;
+  if (/[^A-Za-z0-9]/.test(password)) strength++;
+
+  bars.forEach((bar, i) => {
+    bar.style.background = i < strength ? "#a4ffaf" : "transparent";
+  });
+
+  strengthText.textContent =
+    strength <= 1 ? "WEAK" :
+    strength === 2 ? "MEDIUM" :
+    strength === 3 ? "STRONG" : "VERY STRONG";
+}
+
+generateBtn.addEventListener("click", () => {
   const pwd = generatePassword();
-  passwordField.value = pwd;
-  updateStrengthBar(pwd);
+  passwordEl.value = pwd;
+  updateStrength(pwd);
 });
 
-copyBtn.addEventListener('click', () => {
-  if (!passwordField.value) return;
-  navigator.clipboard.writeText(passwordField.value)
-    .then(() => alert("Password copied to clipboard!"))
-    .catch(() => alert("Failed to copy password."));
+copyBtn.addEventListener("click", () => {
+  if (!passwordEl.value) return;
+  navigator.clipboard.writeText(passwordEl.value);
+  alert("Password copied!");
 });
